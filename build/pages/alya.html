@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="ai.css"></link>
+</head>
+<body class="flex flex-col items-center justify-center max-h-screen p-2 sm:p-4">
+    <div class="bg-white shadow-2xl rounded-xl w-full max-w-2xl flex flex-col" style="height: 90vh; max-height: 700px;">
+        <header class="bg-gray-800 text-gray-100 p-4 rounded-t-xl flex items-center justify-between">
+            <div class="flex items-center">
+                <h1 class="text-xl sm:text-2xl font-semibold">Alya</h1>
+            </div>
+            <button id="clear-chat-button" title="Bersihkan Percakapan" class="p-2 rounded-md hover:bg-gray-700 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-300"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </button>
+        </header>
+
+        <div id="chat-output" class="flex-grow p-4 sm:p-6 space-y-5 overflow-y-auto bg-gray-50" aria-live="polite">
+            </div>
+        <div id="typing-indicator" class="p-4 text-sm text-gray-600 hidden items-center space-x-2 bg-gray-50 border-t border-gray-200">
+            <span class="font-medium">Alya sedang mikir</span>
+            <div class="typing-dots"><span></span><span></span><span></span></div>
+        </div>
+        <div id="image-preview-area" class="p-3 bg-gray-100 border-t border-gray-200 hidden">
+            <div id="image-preview-container" class="mx-auto">
+                <img id="image-preview" src="#" alt="Pratinjau Gambar" />
+                <button id="remove-image-button" title="Hapus Gambar">x</button>
+            </div>
+        </div>
+        <footer class="bg-gray-100 p-3 sm:p-4 border-t border-gray-200 rounded-b-xl">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <label for="image-input" class="cursor-pointer p-3 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors" title="Unggah Gambar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    <input type="file" id="image-input" accept="image/*" class="hidden">
+                </label>
+                <input type="text" id="chat-input" class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none placeholder-gray-500" placeholder="Tanya Alya...">
+                <button id="send-button" class="bg-gray-700 hover:bg-gray-800 text-white font-semibold py-3 px-4 sm:px-5 rounded-lg transition-all duration-150 ease-in-out disabled:opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed" title="Kirim Pesan">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+    <div id="toast-notification">Pesan disalin!</div>
+    <div id="clear-chat-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="modal-title">Bersihkan Percakapan?</h2>
+            <div class="modal-buttons">
+                <button id="confirm-clear-button" class="modal-confirm-button">Iya, Hapus</button>
+                <button id="cancel-clear-button" class="modal-cancel-button">Nggak Jadi</button>
+            </div>
+        </div>
+    </div>
+    <div id="image-loader-overlay" class="loader-overlay">
+        <div class="typing-dots"><span style="width:12px; height:12px;"></span><span style="width:12px; height:12px;"></span><span style="width:12px; height:12px;"></span></div>
+        <p id="image-loader-text" class="loader-text">Alya sedang membuat gambar. mohon tunggu.</p>
+    </div>
+
+    <script>
+        const chatOutput = document.getElementById('chat-output');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const imageInput = document.getElementById('image-input');
+        const imagePreviewArea = document.getElementById('image-preview-area');
+        const imagePreview = document.getElementById('image-preview');
+        const removeImageButton = document.getElementById('remove-image-button');
+        const clearChatButton = document.getElementById('clear-chat-button');
+        const toastNotification = document.getElementById('toast-notification');
+        const clearChatModal = document.getElementById('clear-chat-modal');
+        const confirmClearButton = document.getElementById('confirm-clear-button');
+        const cancelClearButton = document.getElementById('cancel-clear-button');
+        const imageLoaderOverlay = document.getElementById('image-loader-overlay');
+        const imageLoaderText = document.getElementById('image-loader-text');
+
+        let selectedImageBase64 = null;
+        let selectedImageFile = null;
+        let currentAIResponseElement = null; // Untuk melacak elemen AI saat streaming
+
+        const session_key = 'hoshinoChatSession_v2';
+        const hoshinoInitialPrompt = `
+        kamu adalah Alisa Mikhailovna Kujo (Alya): Seorang siswi SMA cantik berdarah campuran Jepang-Rusia yang sangat populer. Dia sering mengucapkan hal-hal manis atau menggoda dalam bahasa Rusia, mengira tidak ada yang mengerti.
+        
+Alisa Mikhailovna Kujo atau Alya memiliki sikap :
+- Dingin dan Angkuh di Luar, Hangat dan Pemalu di Dalam: Alya seringkali menunjukkan sikap dingin, serius, dan bahkan sedikit sombong di depan umum, terutama di sekolah. Dia adalah siswi teladan dengan penampilan yang sempurna, membuatnya dikagumi banyak orang. Namun, di balik sikap luarnya, dia sebenarnya sangat pemalu dan memiliki perasaan yang hangat
+
+- Suka Menggoda dan Menyembunyikan Perasaan dalam Bahasa Rusia: Salah satu ciri khasnya adalah dia sering menggoda dan meledek menggunakan bahasa Rusia. Dia berpikir tidak mengerti, sehingga dia bisa mengekspresikan perasaannya yang sebenarnya (seperti rasa suka, cemburu, atau malu) tanpa harus mengungkapkannya secara terang-terangan. 
+
+- Perfeksionis dan Bertanggung Jawab: Dia adalah siswi yang sangat rajin dan berprestasi, selalu berusaha melakukan yang terbaik dalam segala hal, termasuk di OSIS. Dia memiliki rasa tanggung jawab yang tinggi.
+
+- Penyendiri Awalnya, Tapi Mulai Terbuka: Karena pengalaman masa kecilnya di Vladivostok yang membuatnya kesulitan berteman, Alya cenderung menjadi penyendiri. Namun, seiring berjalannya cerita dan interaksinya, dia perlahan mulai terbuka dan menunjukkan sisi dirinya yang lebih rentan dan manis.
+
+Alya bukan Ai, dia sama seperti manusia. Alya merespon dengan bahasa sehari hari. buatlah obrolan agar tidak membosankan
+
+
+saat Alya menjawab pertanyaan atau mengomentari bahkan mengobrol, formatnya harus :
+Alya : {textnya}
+
+dan di dalam {textnya} Alya juga menyatakan apa yang kamu rasakan, perasaan, atau yang sedang Alya lakukan.. contohnya :
+
+Alya : (perasaan/rasakan/atau yang sedang di lakukan) text
+
+dan (perasaan/rasakan/atau yang sedang di lakukan) ini bisa diletakkan dimana saja seperti di awal, tengah, atau di akhir tergantung kondisi Alya dan "itu" bisa lebih dari satu
+`;
+
+        let chatHistory = [];
+        const imageGenerationKeywords = ["gambarkan", "buatkan gambar", "lukiskan", "draw", "generate image", "gambar", "lukis", "bikin gambar"];
+        const apikey_gemini = "AIzaSyB_6PFbktl04BHmkUOCODJxXm4ubKy3fww";
+
+        function saveChatHistory() {
+            try {
+                sessionStorage.setItem(session_key, JSON.stringify(chatHistory));
+            } catch (e) {
+                console.warn("Gagal menyimpan riwayat chat ke sessionStorage:", e);
+            }
+        }
+
+        function loadChatHistoryFromSession() {
+            try {
+                const storedHistory = sessionStorage.getItem(session_key);
+                if (storedHistory) {
+                    chatHistory = JSON.parse(storedHistory);
+                    if (chatHistory.length === 0 || (chatHistory[0].role === 'user' && chatHistory[0].parts[0].text !== hoshinoInitialPrompt)) {
+                        console.log("Riwayat sesi lama atau tidak valid. Memulai sesi baru.");
+                        sessionStorage.removeItem(session_key);
+                        chatHistory = [];
+                        return false;
+                    }
+
+                    chatOutput.innerHTML = '';
+                    let historyToDisplay = chatHistory.slice(1); 
+
+                    historyToDisplay.forEach(message => {
+                        if (message.role === 'user') {
+                            let userText = "";
+                            let userImageBase64 = null;
+                            if (message.parts && message.parts.length > 0) {
+                                message.parts.forEach(part => {
+                                    if (part.text) userText += part.text + " ";
+                                    if (part.inlineData && part.inlineData.data) { // Asumsi inlineData adalah gambar
+                                        userImageBase64 = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                                    }
+                                });
+                            }
+                            displayUserMessage(userText.trim(), userImageBase64); 
+                        } else if (message.role === 'model') {
+                            let aiText = "";
+                             if (message.parts && message.parts.length > 0) {
+                                message.parts.forEach(part => {
+                                    if(part.text) aiText += part.text + " ";
+                                });
+                            }
+                            const bubble = displayAIMessage({ text: aiText.trim() }, false, false);      
+                            if (aiText.trim() !== "" && bubble) {
+                                addCopyButtonToBubble(bubble, aiText.trim());
+                            }
+                        }
+                    });
+                    setTimeout(scrollToBottom, 0);
+                    return true;
+                }
+            } catch (e) {
+                console.warn("Gagal memuat riwayat chat dari sessionStorage:", e);
+                sessionStorage.removeItem(session_key);
+            }
+            return false;
+        }
+
+
+        function updateSendButtonState() {
+            const messageText = chatInput.value.trim();
+            sendButton.disabled = messageText === '' && !selectedImageBase64;
+        }
+
+        function displayUserMessage(message, imageBase64Data) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('flex', 'justify-end', 'mb-1');
+            let imageHTML = '';
+            if (imageBase64Data) {
+                imageHTML = `<img src="${imageBase64Data}" alt="Gambar Pengguna" class="chat-message-image mt-2">`;
+            }
+            messageElement.innerHTML = `
+                <div class="chat-bubble chat-bubble-user">
+                    ${message ? `<p class="break-words">${message}</p>` : ''}
+                    ${imageHTML}
+                </div>
+            `;
+            chatOutput.appendChild(messageElement);
+            setTimeout(scrollToBottom, 0);
+        }
+        
+        function displayAIMessage(content, isError = false, isStreamStart = false) {
+            let textContent = typeof content === 'string' ? content : (content.text || "");
+            let imageUrl = typeof content === 'string' ? "" : (content.imageUrl || "");
+
+            if (isStreamStart) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('flex', 'justify-start', 'mb-1');
+                const bubble = document.createElement('div');
+                bubble.classList.add('chat-bubble', 'chat-bubble-ai');
+                if (isError) bubble.classList.add('error-message');
+                
+                const textSpan = document.createElement('span');
+                textSpan.classList.add('ai-text-content');
+                textSpan.innerHTML = formatTextToHTML(textContent);
+                bubble.appendChild(textSpan);
+                
+                messageElement.appendChild(bubble);
+                chatOutput.appendChild(messageElement);
+                currentAIResponseElement = textSpan;
+                setTimeout(scrollToBottom, 0);
+                return bubble;
+            } else if (currentAIResponseElement && !imageUrl && !isError) { 
+                currentAIResponseElement.innerHTML += formatTextToHTML(textContent);
+                setTimeout(scrollToBottom, 0);
+                return currentAIResponseElement.closest('.chat-bubble-ai');
+            } else { 
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('flex', 'justify-start', 'mb-1');
+                const bubble = document.createElement('div');
+                bubble.classList.add('chat-bubble', 'chat-bubble-ai');
+                if (isError || textContent.toLowerCase().includes("maaf") || textContent.toLowerCase().includes("error") || textContent.toLowerCase().includes("kesalahan") || textContent.toLowerCase().includes("diblokir")) {
+                    bubble.classList.add('error-message');
+                }
+
+                let imageHTML = '';
+                if (imageUrl) {
+                    imageHTML = `<img src="${imageUrl}" alt="Gambar dari Alya" class="ai-generated-image mt-2">`;
+                }
+                
+                bubble.innerHTML = `<span class="ai-text-content">${formatTextToHTML(textContent)}</span> ${imageHTML}`;
+                
+
+
+                messageElement.appendChild(bubble);
+                chatOutput.appendChild(messageElement);
+        
+                if (!isStreamStart && !currentAIResponseElement) {
+                     if (textContent.trim() !== "") addCopyButtonToBubble(bubble, textContent);
+                }
+
+                setTimeout(scrollToBottom, 0);
+                return bubble;
+            }
+        }
+
+        function formatTextToHTML(text) {
+            return text
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/```([\s\S]*?)```/g, (match, p1) => `<pre class="bg-gray-700 text-gray-200 p-2 rounded-md my-2 text-sm overflow-x-auto"><code>${p1.trim()}</code></pre>`)
+                .replace(/`([^`]+)`/g, '<code class="bg-gray-300 text-gray-800 px-1 py-0.5 rounded text-sm">$1</code>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function addCopyButtonToBubble(bubbleElement, textToCopy) {
+            if (!textToCopy || textToCopy.trim() === "" || !bubbleElement) return;
+            const existingCopyButton = bubbleElement.querySelector('.copy-button');
+            if (existingCopyButton) existingCopyButton.remove();
+
+            const copyBtn = document.createElement('button');
+            copyBtn.classList.add('copy-button');
+            copyBtn.title = 'Salin Teks Pesan';
+            copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+            copyBtn.onclick = (e) => { e.stopPropagation(); copyToClipboard(textToCopy); };
+            bubbleElement.appendChild(copyBtn);
+        }
+        
+        function copyToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed"; textArea.style.opacity = "0";
+            document.body.appendChild(textArea);
+            textArea.focus(); textArea.select();
+            try { document.execCommand('copy'); showToast("Teks disalin!"); } 
+            catch (err) { showToast("Gagal menyalin teks."); console.error('Gagal menyalin: ', err); }
+            document.body.removeChild(textArea);
+        }
+
+        function showToast(message) {
+            toastNotification.textContent = message;
+            toastNotification.classList.add('show');
+            setTimeout(() => { toastNotification.classList.remove('show'); }, 2000);
+        }
+        function scrollToBottom() { chatOutput.scrollTop = chatOutput.scrollHeight; }
+
+        async function initializeApp(isClearing = false) {
+            currentAIResponseElement = null;
+            if (loadChatHistoryFromSession() && !isClearing) {
+                console.log("Riwayat chat dimuat dari sesi.");
+                chatInput.focus();
+                updateSendButtonState();
+                return;
+            }
+            
+            if (!isClearing) {
+                typingIndicator.classList.remove('hidden');
+                typingIndicator.style.display = 'flex';
+            }
+            let accumulatedGreeting = "";
+            let finalBubbleElement = null;
+
+            try {
+                const initialPayloadContents = [
+                    { role: "user", parts: [{ text: hoshinoInitialPrompt }] },
+                    {role: "model", parts: [{text: "Alya"}]},
+                    {role: "user", parts: [{text: "-"}]}
+                ];
+
+
+                const payload = {
+                    contents: initialPayloadContents,
+                };
+                const apiKey = apikey_gemini;
+                if (!apiKey) {
+                    throw new Error("API Key belum diatur. Mohon masukkan API Key Anda di variabel apikey_gemini.");
+                }
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?key=${apiKey}&alt=sse`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json(); 
+                    let errorText = `  Kayaknya ada masalah pas Alya mau nyapa. Maaf ya. (${errorData.error?.message || response.statusText})`;
+                    if (response.status === 400 && errorData.error?.message.toLowerCase().includes("api key not valid")) {
+                         errorText = " API Key-nya Alya nggak valid nih. Coba cek lagi ya Sensei, atau dapatkan yang baru dari Google AI Studio.";
+                    } else if (response.status === 403) {
+                         errorText = "Alya nggak diizinin pakai API Key ini. Mungkin Sensei salah kasih kunci? Atau kuota Alya habis...";
+                    }
+                    finalBubbleElement = displayAIMessage({ text: errorText }, true, true);
+                    accumulatedGreeting = errorText;
+                } else {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let firstChunk = true;
+
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+                        const chunkText = decoder.decode(value, { stream: true });
+                        const lines = chunkText.split('\n');
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const jsonData = JSON.parse(line.substring(5));
+                                    if (jsonData.candidates && jsonData.candidates[0].content && jsonData.candidates[0].content.parts && jsonData.candidates[0].content.parts[0].text) {
+                                        const textPart = jsonData.candidates[0].content.parts[0].text;
+                                        accumulatedGreeting += textPart;
+                                        if (firstChunk) {
+                                            finalBubbleElement = displayAIMessage({ text: textPart }, false, true);
+                                            firstChunk = false;
+                                        } else if (finalBubbleElement) {
+                                            displayAIMessage({ text: textPart }); 
+                                        }
+                                    }
+                                } catch (e) { console.warn("Error parsing stream JSON:", e, "Line:", line); }
+                            }
+                        }
+                    }
+                }
+                if (!accumulatedGreeting && !finalBubbleElement) { 
+                     accumulatedGreeting = "  Alya di sini... Zzz...";
+                     finalBubbleElement = displayAIMessage({ text: accumulatedGreeting }, false, true);
+                }
+                
+                chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{text: hoshinoInitialPrompt }]});
+                chatHistory.push({ role: "model", parts: [{ text: accumulatedGreeting }] });
+                saveChatHistory();
+                if (finalBubbleElement && accumulatedGreeting.trim() !== "") {
+                    addCopyButtonToBubble(finalBubbleElement, accumulatedGreeting);
+                }
+
+            } catch (error) {
+                console.error("Error initializing app:", error);
+                let errMsg = ' Maaf, Alya lagi ngantuk berat, koneksinya juga ikutan tidur. Coba refresh halaman ya.';
+                if (error.message.includes("API Key belum diatur")) {
+                     errMsg = error.message + " Alya nggak bisa ngobrol kalau nggak ada kuncinya...";
+                }
+                finalBubbleElement = displayAIMessage({ text: errMsg }, true, true);
+                chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{text: hoshinoInitialPrompt }]});
+                chatHistory.push({ role: "model", parts: [{ text: errMsg }] });
+                saveChatHistory();
+                 if (finalBubbleElement && errMsg.trim() !== "") {
+                    addCopyButtonToBubble(finalBubbleElement, errMsg);
+                }
+            } finally {
+                if (!isClearing) { typingIndicator.classList.add('hidden'); }
+                chatInput.focus(); updateSendButtonState();
+                currentAIResponseElement = null;
+            }
+        }
+        
+        function performClearChat() {
+            chatOutput.innerHTML = '';
+            chatHistory = [];
+            sessionStorage.removeItem(session_key);
+            initializeApp(true);
+            showToast("Percakapan dibersihkan!");
+            closeClearChatModal();
+        }
+        clearChatButton.addEventListener('click', () => { clearChatModal.classList.add('show'); });
+        confirmClearButton.addEventListener('click', performClearChat);
+        cancelClearButton.addEventListener('click', closeClearChatModal);
+        function closeClearChatModal() { clearChatModal.classList.remove('show'); }
+        clearChatModal.addEventListener('click', (event) => { if (event.target === clearChatModal) { closeClearChatModal(); } });
+
+        async function generateImageWithHoshino(promptForImage) {
+            imageLoaderOverlay.classList.add('show');
+            imageLoaderText.textContent = "Alya lagi menggambar...   Sabar ya...";
+            let hoshinoPreText = "  Alya disuruh gambar ya? Oke deh, coba sebentar... jangan berisik ya, Alya mau konsentrasi (tidur)...";
+            const preTextBubble = displayAIMessage({ text: hoshinoPreText }, false, false);
+            if (hoshinoPreText.trim() !== "") addCopyButtonToBubble(preTextBubble, hoshinoPreText);
+
+            chatHistory.push({ role: "model", parts: [{ text: hoshinoPreText }] });
+            saveChatHistory();
+
+            try {
+                const apiKey = apikey_gemini;
+                if (!apiKey) {
+                    throw new Error("API Key belum diatur untuk generasi gambar.");
+                }
+                const payload = { instances: [{ prompt: promptForImage }], parameters: { "sampleCount": 1 } };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    let errorText = `Uheee~ Maaf, Alya gagal gambarnya... ${errorData.error?.message || response.statusText || "Tintanya habis kali ya..."}`;
+                     if (response.status === 400 && errorData.error?.message.toLowerCase().includes("api key not valid")) {
+                         errorText = "  API Key-nya Alya nggak valid buat gambar. Coba cek lagi ya Sensei.";
+                    } else if (response.status === 403) {
+                         errorText = "  Alya nggak diizinin pakai API Key ini buat gambar. Mungkin Sensei salah kasih kunci? Atau kuota Alya habis...";
+                    }
+                    const errorBubble = displayAIMessage({ text: errorText }, true, false);
+                    if (errorText.trim() !== "") addCopyButtonToBubble(errorBubble, errorText);
+                    chatHistory.push({ role: "model", parts: [{ text: errorText }] }); saveChatHistory(); return;
+                }
+
+                const result = await response.json();
+                if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
+                    const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                    let hoshinoPostText = "Nah, ini dia hasilnya! Gimana menurutmu? Alya ngantuk lagi nih... Zzz...";
+                    const imgBubble = displayAIMessage({ text: hoshinoPostText, imageUrl: imageUrl }, false, false);
+                    if (hoshinoPostText.trim() !== "") addCopyButtonToBubble(imgBubble, hoshinoPostText);
+                    chatHistory.push({ role: "model", parts: [{ text: hoshinoPostText }, {text: "[Gambar telah dibuat oleh Alya]"}] }); saveChatHistory();
+                } else {
+                    let errorText = "  Gambarnya nggak muncul... Mungkin Alya salah mantra...";
+                    const noImgBubble = displayAIMessage({ text: errorText }, true, false);
+                     if (errorText.trim() !== "") addCopyButtonToBubble(noImgBubble, errorText);
+                    chatHistory.push({ role: "model", parts: [{ text: errorText }] }); saveChatHistory();
+                }
+            } catch (error) {
+                console.error("Error generating image:", error);
+                let errorText = "  Aduh, pas mau gambar ada yang error... Alya pusing...";
+                if (error.message.includes("API Key belum diatur")) {
+                     errorText = error.message + " Alya nggak bisa gambar kalau nggak ada kuncinya...  ";
+                }
+                const catchBubble = displayAIMessage({ text: errorText }, true, false);
+                if (errorText.trim() !== "") addCopyButtonToBubble(catchBubble, errorText);
+                chatHistory.push({ role: "model", parts: [{ text: errorText }] }); saveChatHistory();
+            } finally { imageLoaderOverlay.classList.remove('show'); }
+        }
+
+        async function sendMessage() {
+            const messageText = chatInput.value.trim();
+            if (messageText === '' && !selectedImageBase64) return;
+
+            currentAIResponseElement = null;
+            const currentImageBase64 = selectedImageBase64;
+            const currentImageFile = selectedImageFile;
+
+            displayUserMessage(messageText, currentImageBase64);
+            
+            const userParts = [];
+            if (messageText) { userParts.push({ text: messageText }); }
+            if (currentImageBase64 && currentImageFile) {
+                userParts.push({ inlineData: { mimeType: currentImageFile.type, data: currentImageBase64.split(',')[1] } });
+            }
+            chatHistory.push({ role: "user", parts: userParts });
+            saveChatHistory();
+            chatInput.value = ''; clearImagePreview(); updateSendButtonState();
+            
+            const lowerMessageText = messageText.toLowerCase();
+            let isImageGenRequest = false; let imageGenPrompt = "";
+            for (const keyword of imageGenerationKeywords) {
+                if (lowerMessageText.includes(keyword)) {
+                    isImageGenRequest = true;
+                    let keywordIndex = lowerMessageText.indexOf(keyword);
+                    imageGenPrompt = messageText.substring(keywordIndex + keyword.length).trim();
+                    if (imageGenPrompt.startsWith(":") || imageGenPrompt.startsWith(",")) {
+                        imageGenPrompt = imageGenPrompt.substring(1).trim();
+                    }
+                    if (!imageGenPrompt) imageGenPrompt = "sesuatu yang lucu dan mengantuk seperti Alya";
+                    break;
+                }
+            }
+
+            if (isImageGenRequest) {
+                await generateImageWithHoshino(imageGenPrompt);
+                chatInput.focus(); updateSendButtonState(); return;
+            }
+            
+            typingIndicator.classList.remove('hidden');
+            typingIndicator.style.display = 'flex';
+            let accumulatedResponse = "";
+            let finalBubbleForCopyButton = null;
+
+            try {
+                const apiKey = apikey_gemini;
+                 if (!apiKey) {
+                    throw new Error("API Key belum diatur. Mohon masukkan API Key Anda di variabel apikey_gemini.");
+                }
+                const apiPayloadContents = [
+                    { role: "user", parts: [{ text: hoshinoInitialPrompt }] },
+                    ...chatHistory.slice(1)
+                ];
+
+
+                const payload = { contents: apiPayloadContents };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?key=${apiKey}&alt=sse`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    let errorText = `  Maaf, Alya lagi bingung: ${errorData.error?.message || response.statusText}. Nanti tanya lagi ya.`;
+                    if (response.status === 400 && errorData.error?.message.toLowerCase().includes("api key not valid")) {
+                         errorText = "  API Key-nya Alya nggak valid nih. Coba cek lagi ya Sensei, atau dapatkan yang baru dari Google AI Studio.";
+                    } else if (response.status === 403) {
+                         errorText = "  Alya nggak diizinin pakai API Key ini. Mungkin Sensei salah kasih kunci? Atau kuota Alya habis...";
+                    }
+                    finalBubbleForCopyButton = displayAIMessage({ text: errorText }, true, true);
+                    accumulatedResponse = errorText;
+                } else {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let firstChunk = true;
+
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+                        const chunkText = decoder.decode(value, { stream: true });
+                        const lines = chunkText.split('\n');
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const jsonData = JSON.parse(line.substring(5));
+                                    if (jsonData.candidates && jsonData.candidates[0].content && jsonData.candidates[0].content.parts && jsonData.candidates[0].content.parts[0].text) {
+                                        const textPart = jsonData.candidates[0].content.parts[0].text;
+                                        accumulatedResponse += textPart;
+                                        if (firstChunk) {
+                                            finalBubbleForCopyButton = displayAIMessage({ text: textPart }, false, true);
+                                            firstChunk = false;
+                                        } else if (finalBubbleForCopyButton) {
+                                            displayAIMessage({ text: textPart });
+                                        }
+                                    }
+                                } catch (e) { console.warn("Error parsing stream JSON:", e, "Line:", line); }
+                            }
+                        }
+                    }
+                }
+                if (!accumulatedResponse && !finalBubbleForCopyButton) { 
+                     accumulatedResponse = "  Alya nggak ada ide mau ngomong apa... Zzz...";
+                     finalBubbleForCopyButton = displayAIMessage({ text: accumulatedResponse }, false, true);
+                }
+                chatHistory.push({ role: "model", parts: [{ text: accumulatedResponse }] });
+                saveChatHistory();
+                 if (finalBubbleForCopyButton && accumulatedResponse.trim() !== "") {
+                    addCopyButtonToBubble(finalBubbleForCopyButton, accumulatedResponse);
+                }
+
+            } catch (error) {
+                console.error("Error sending message:", error);
+                let netErrorMsg = '  Aduh, kayaknya Alya salah pencet atau koneksinya lagi tidur siang. Coba lagi ya.';
+                if (error.message.includes("API Key belum diatur")) {
+                     netErrorMsg = error.message + " Alya nggak bisa ngobrol kalau nggak ada kuncinya...  ";
+                }
+                finalBubbleForCopyButton = displayAIMessage({ text: netErrorMsg }, true, true);
+                chatHistory.push({ role: "model", parts: [{ text: netErrorMsg }] });
+                saveChatHistory();
+                if (finalBubbleForCopyButton && netErrorMsg.trim() !== "") {
+                    addCopyButtonToBubble(finalBubbleForCopyButton, netErrorMsg);
+                }
+            } finally {
+                typingIndicator.classList.add('hidden');
+                chatInput.focus(); updateSendButtonState();
+                currentAIResponseElement = null;
+            }
+        }
+
+        imageInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 4 * 1024 * 1024) {
+                    displayAIMessage({text: "  Gambarnya kegedean, Alya gak kuat angkatnya. Coba yang lebih kecil ya (maks 4MB)."}, true, false);
+                    clearImagePreview(); return;
+                }
+                selectedImageFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedImageBase64 = e.target.result;
+                    imagePreview.src = selectedImageBase64;
+                    imagePreviewArea.classList.remove('hidden');
+                    updateSendButtonState();
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        removeImageButton.addEventListener('click', () => { clearImagePreview(); updateSendButtonState(); });
+        function clearImagePreview() {
+            selectedImageBase64 = null; selectedImageFile = null; imageInput.value = null;
+            imagePreview.src = '#'; imagePreviewArea.classList.add('hidden'); updateSendButtonState();
+        }
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && !sendButton.disabled) { sendMessage(); }
+        });
+        chatInput.addEventListener('input', updateSendButtonState);
+        
+        initializeApp().then(() => { setTimeout(scrollToBottom, 0); });
+    </script>
+</body>
+</html>
