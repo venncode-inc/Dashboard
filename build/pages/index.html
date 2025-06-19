@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create meme</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="https://i.pinimg.com/736x/0d/71/2a/0d712a0b6805c0b44386339048bdfce5.jpg?format=png&name=900x900">
+</head>
+    <p align="center">
+      <img src="https://media.tenor.com/yWaLIc5J9WgAAAAj/momoi.gif" width="30%" height="30%" />
+    </p>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-semibold text-center text-gray-800 mb-6">Create meme</h1>
+        <form id="uploadForm" action="/upload" method="post" encType="multipart/form-data" class="space-y-4">
+            <div>
+                <label for="text1" class="block text-gray-600 font-medium">Top text</label>
+                <input type="text" name="text1" id="text1" class="mt-2 p-2 border border-gray-300 rounded-md w-full" placeholder="Enter text here" />
+            </div>
+            <div>
+                <label for="text2" class="block text-gray-600 font-medium">Bottom text</label>
+                <input type="text" name="text2" id="text2" class="mt-2 p-2 border border-gray-300 rounded-md w-full" placeholder="Enter text here" />
+                <p id="textError" class="text-red-500 text-sm mt-1 hidden">Please fill in at least one of "Top text" or "Bottom text".</p>
+            </div>
+            <div>
+                <label for="file" class="block text-gray-600 font-medium">Select image <span class="text-red-500">*</span></label>
+                <input type="file" name="file" id="file" class="mt-2 p-2 border border-gray-300 rounded-md w-full" accept="image/*" required />
+                <div id="imagePreview" class="mt-4 hidden">
+                    <img src="#" alt="Pratinjau Gambar" class="max-w-full h-auto rounded-md border border-gray-300" />
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                Create meme
+            </button>
+            <div id="loading" class="hidden text-center mt-4">
+                <svg role="status" class="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <path d="M99 50.5C99 78.2 77.7 100 50 100C22.3 100 1 78.2 1 50.5C1 22.8 22.3 1 50 1C77.7 1 99 22.8 99 50.5ZM10 50.5C10 73.4 27.6 91.9 50 91.9C72.4 91.9 90 73.4 90 50.5C90 27.6 72.4 9.1 50 9.1C27.6 9.1 10 27.6 10 50.5ZM91 50.5C91 70.6 72.4 89.1 50 89.1C27.6 89.1 10 70.6 10 50.5C10 30.4 27.6 11.9 50 11.9C72.4 11.9 91 30.4 91 50.5Z" />
+                </svg>
+                <p class="text-gray-600 mt-2">Generating...</p>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const loading = document.getElementById('loading');
+        const fileInput = document.getElementById('file');
+        const imagePreview = document.getElementById('imagePreview');
+        const imagePreviewImg = imagePreview.querySelector('img');
+        const text1Input = document.getElementById('text1');
+        const text2Input = document.getElementById('text2');
+        const textError = document.getElementById('textError');
+
+        form.addEventListener('submit', function(event) {
+            // Validasi untuk memastikan setidaknya satu dari text1 atau text2 terisi
+            if (text1Input.value.trim() === '' && text2Input.value.trim() === '') {
+                textError.classList.remove('hidden'); // Tampilkan pesan error
+                event.preventDefault(); // Mencegah form disubmit
+                return; // Berhenti eksekusi fungsi
+            } else {
+                textError.classList.add('hidden'); // Sembunyikan pesan error jika sudah valid
+            }
+
+            // Tampilkan spinner loading ketika form disubmit
+            loading.classList.remove('hidden');
+        });
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (file.type.startsWith('image/')) {
+                        imagePreviewImg.src = e.target.result;
+                        imagePreview.classList.remove('hidden');
+                    } else {
+                        imagePreview.classList.add('hidden');
+                        imagePreviewImg.src = '#';
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.classList.add('hidden');
+                imagePreviewImg.src = '#';
+            }
+        });
+    </script>
+</body>
+    <h2 class="text-xl font-bold border-b-2 border-gray-300 pb-2">SOCIAL MEDIA</h2>
+        <p>My Social media:</p>
+        <ul class="list-none pl-0">
+            <li class="inline-block mr-4">
+                <a href="https://t.me/rapikz"><img
+                            src="https://img.shields.io/badge/Telegram-00FFFF?style=for-the-badge&logo=telegram&logoColor=white"
+                            alt="Telegram"></a>
+            </li>
+            <li class="inline-block mr-4">
+                <a href="https://whatsapp.com/channel/0029VaoJb11LikgEpNpBty0e"><img
+                            src="https://img.shields.io/badge/WhatsApp Channel-25D366?style=for-the-badge&logo=whatsapp&logoColor=white&link=https://whatsapp.com/channel/0029VaoJb11LikgEpNpBty0e"
+                            alt="WhatsApp"></a>
+            </li>
+            <li class="inline-block mr-4">
+                <a href="https://www.instagram.com/rapik_gimang"><img
+                            src="https://img.shields.io/badge/Instagram-A020F0?style=for-the-badge&logo=instagram&logoColor=white"
+                            alt="Instagram"></a>
+            </li>
+            <li class="inline-block mr-4">
+                <a href="https://www.youtube.com/@rapikuzudesu"><img
+                            src="https://img.shields.io/badge/YouTube-ff0000?style=for-the-badge&logo=youtube&logoColor=ff000000&link=https://youtube.com/@sharescbyrapikzajah" alt="YouTube"></a>
+            </li>
+           <li class="inline-block mr-4">
+               <a href="https://www.facebook.com/rapikuzudesuwa" style="margin-top: 20px;">
+        <img title="Author" src="https://img.shields.io/badge/facebook-blue.svg?style=for-the-badge&logo=facebook" alt="FESNUK">
+    </a>
+            </li>
+            <li class="inline-block mr-4">
+                <a href="https://github.com/Rapikz-kwontwol"><img title="Author"
+                            src="https://img.shields.io/badge/GITHUB-gray.svg?style=for-the-badge&logo=github"
+                            alt="GitHub"></a>
+            </li>
+        </ul>
+</html>
