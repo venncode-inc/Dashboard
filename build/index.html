@@ -50,15 +50,25 @@
             </a>
           </li>
           <li class="mt-0.5 w-full">
-            <a class="py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors dark:text-white dark:opacity-80" href="./pages/index.html">
+            <a class="py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors dark:text-white dark:opacity-80" href="https://creatememedesu.vercel.app/">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                  <i class="relative top-0 text-sm leading-normal text-cyan-500 ni ni-app"></i>
               </div>
               <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">sticker meme</span>
             </a>
           </li>
+          <li class="mt-0.5 w-full">
+            <a class="py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors dark:text-white dark:opacity-80" href="snippets (1).html">
+              <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
+                  <i class="relative top-0 text-sm leading-normal text-cyan-500 ni ni-app"></i>
+              </div>
+              <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Shi Zhen Profile</span>
+            </a>
+          </li>
         </ul>
       </div>
+      
+     
 
       <div class="mx-4">
         <!-- load phantom colors for card after: -->
@@ -174,111 +184,7 @@
                     <div>
                       <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Hello there!</p>
                       <h5 class="mb-2 font-bold dark:text-white">welcome :)</h5>
-                      <p> v-code - make your fantasy!</p>
-                        <audio id="myAudioPlayer" controls autoplay>
-        Maaf, browser kamu tidak mendukung tag audio.
-    </audio>
-
-    <p>Memutar: <strong>venn's playlist</strong></p>
-     
-    
-            
-
-    <button id="nextButton"></button>
-    <button id="prevButton"></button>
-    <button id="shuffleButton">( Acak Playlist )</button>
-    <button id="loopToggleButton">( Ulang Playlist )</button>
-
-    <script>
-        const audioPlayer = document.getElementById('myAudioPlayer');
-        const currentSongTitleSpan = document.getElementById('currentSongTitle');
-        const shuffleButton = document.getElementById('shuffleButton');
-        const loopToggleButton = document.getElementById('loopToggleButton');
-
-        // --- Daftar Lagu ---
-        const originalPlaylist = [
-            { title: 'Lagu 1: Indahnya Alam', src: 'lagu.mp3' },
-            { title: 'Lagu 2: Petualangan Hebat', src: 'lagu2.mp3' },
-            { title: 'Lagu 3: Damainya Pagi', src: 'lagu3.mp3' },
-            { title: 'Lagu 4: Semangat Baru', src: 'lagu4.mp3' },
-            { title: 'Lagu 5: Kenangan Indah', src: 'lagu5.mp3' },
-            { title: 'Lagu 6: Melodi Hati', src: 'lagu6.mp3' },
-            { title: 'Lagu 7: Kisah Cinta', src: 'lagu7.mp3' },
-            { title: 'Lagu 8: Perjalanan Malam', src: 'lagu8.mp3' },
-            { title: 'Lagu 9: Desir Angin', src: 'lagu9.mp3' },
-            { title: 'Lagu 10: Cahaya Bulan', src: 'lagu10.mp3' },
-            { title: 'Lagu 11: Mimpi Terwujud', src: 'lagu11.mp3' },
-            { title: 'Lagu 12: Harmoni Kehidupan', src: 'lagu12.mp3' },
-            { title: 'Lagu 13: Senja di Pelabuhan', src: 'lagu13.mp3' },
-            { title: 'Lagu 14: Rindu Kampung Halaman', src: 'lagu14.mp3' },
-            { title: 'Lagu 15: Selamat Jalan', src: 'lagu15.mp3' }
-        ];
-
-        let currentPlaylist = [...originalPlaylist]; // Duplikat playlist asli
-        let currentSongIndex = 0;
-        let isLooping = false;
-
-        // --- Fungsi Utama untuk Memutar Lagu ---
-        function playSong(index) {
-            if (index >= 0 && index < currentPlaylist.length) {
-                const song = currentPlaylist[index];
-                audioPlayer.src = song.src;
-                currentSongTitleSpan.textContent = song.title;
-                audioPlayer.play().catch(e => console.log("Autoplay ditolak:", e)); // Tangani jika autoplay ditolak
-                currentSongIndex = index;
-            } else if (isLooping) {
-                // Jika looping aktif dan sudah mencapai akhir/awal playlist, kembali ke awal/akhir
-                currentSongIndex = (index < 0) ? currentPlaylist.length - 1 : 0;
-                playSong(currentSongIndex);
-            } else {
-                // Berhenti jika tidak looping dan sudah di akhir playlist
-                audioPlayer.pause();
-                console.log('Playlist selesai!');
-                currentSongTitleSpan.textContent = 'Playlist Selesai!';
-            }
-        }
-
-        // --- Event Listener: Ketika Lagu Selesai ---
-        audioPlayer.addEventListener('ended', () => {
-            playSong(currentSongIndex + 1);
-        });
-
-        // --- Event Listener: Tombol Lagu Selanjutnya ---
-        nextButton.addEventListener('click', () => {
-            playSong(currentSongIndex + 2);
-        });
-
-        // --- Event Listener: Tombol Lagu Sebelumnya ---
-        prevButton.addEventListener('click', () => {
-            playSong(currentSongIndex - 1);
-        });
-
-        // --- Event Listener: Tombol Acak Playlist ---
-        shuffleButton.addEventListener('click', () => {
-            // Fisher-Yates (Knuth) Shuffle Algorithm
-            for (let i = currentPlaylist.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [currentPlaylist[i], currentPlaylist[j]] = [currentPlaylist[j], currentPlaylist[i]];
-            }
-            currentSongIndex = 0; // Reset index setelah diacak
-            playSong(currentSongIndex);
-            console.log('Playlist diacak!');
-        });
-
-        // --- Event Listener: Tombol Ulang Playlist ---
-        loopToggleButton.addEventListener('click', () => {
-            isLooping = !isLooping;
-            loopToggleButton.textContent = isLooping ? '( Nonaktifkan Ulang Playlist )' : '( Ulang Playlist )';
-            console.log('Looping playlist:', isLooping);
-        });
-
-        // --- Inisialisasi: Putar Lagu Pertama Saat Halaman Dimuat ---
-        // Penundaan kecil untuk memastikan elemen DOM siap
-        document.addEventListener('DOMContentLoaded', () => {
-            playSong(currentSongIndex);
-        });
-
-    </script>                
+                      <p> v-code - make your fantasy!</p>            
                       <p class="mb-0 dark:text-white dark:opacity-60">
                       	&#x1F680
                         <span class="text-sm font-bold leading-normal text-emerald-500">build version : v16g2vc</span>
