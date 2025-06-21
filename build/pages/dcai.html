@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obrolan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #000000; /* Warna latar belakang gelap */
+            color: #ffffff; /* Warna teks putih */
+            margin: 0;
+            padding: 0;
+        }
+        
+        a {
+  color: white; /* Mengubah warna teks link menjadi putih */
+  text-decoration: none; /* Menghilangkan garis bawah (opsional) */
+}
+
+
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #000000; /* Warna latar belakang kontainer lebih terang dari body */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            min-height: 100vh; /* Pastikan container mengisi seluruh tinggi viewport */
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #000000;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 20px;
+            position: relative; /* Untuk posisi notifikasi */
+        }
+
+        .header-icons i {
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -8px;
+            background-color: #ff4d4f; /* Warna merah untuk badge notifikasi */
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .chat-list {
+            padding: 0;
+            list-style: none;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #000000; /* Garis pemisah antar item */
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .chat-item:last-child {
+            border-bottom: none; /* Hilangkan border pada item terakhir */
+        }
+
+        .chat-item:hover {
+            background-color: #1E1E1E; /* Efek hover */
+        }
+
+        .chat-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 1px solid #444; /* Sedikit border pada avatar */
+        }
+
+        .chat-name {
+            font-size: 16px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+   
+        <div class="header">
+            <div class="header-title">Character Ai  v2.0</div>
+         </div>
+            </div>
+
+        <ul class="chat-list">
+            <li class="chat-item">
+                <img src="1.jpg" alt="Elaina" class="chat-avatar">
+               <a href="elaina.html">Elaina</a>
+            </li>
+            <li class="chat-item">
+                <img src="2.jpg" alt="Elaina" class="chat-avatar">
+                <a href="hoshino.html">Hoshino</a>
+            </li>
+           <li class="chat-item">
+                <img src="3.jpg" alt="Elaina" class="chat-avatar">
+                <a href="hanako.html">Hanako</a>
+            </li>
+            <li class="chat-item">
+                <img src="4.jpg" alt="Elaina" class="chat-avatar">
+                <a href="shiroko.html">Shiroko</a>            </li>
+            <li class="chat-item">
+                <img src="5.jpg" alt="Elaina" class="chat-avatar">
+               <a href="alya.html">Alya</a>
+            </li>
+            <li class="chat-item">
+                <img src="6.jpg" alt="Elaina" class="chat-avatar">
+               <a href="mita.html">Kind Mita</a>
+            </li>
+            <li class="chat-item">
+                <img src="7.jpg" alt="Elaina" class="chat-avatar">
+                <a href="yor.html">yor</a>
+            </li>
+            <li class="chat-item">
+                <span class="chat-name"><a href="../index.com">back to menu &rarr;
+</a></span>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>
